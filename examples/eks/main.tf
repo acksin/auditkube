@@ -35,7 +35,7 @@ module "opszero-eks" {
     "us-east-1b"
   ]
 
-  cluster_version  = "1.27"
+  cluster_version  = "1.31"
   environment_name = local.environment_name
   iam_users = {
     "abhi@opszero.com" = {

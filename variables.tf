@@ -464,10 +464,10 @@ variable "s3_csi_bucket_names" {
 variable "karpenter_metadata_options" {
   description = "Metadata options for the EC2NodeClass"
   default = {
-    httpEndpoint         = "enabled"
-    httpProtocolIPv6     = "disabled"
-    httpPutResponseHopLimit = 1
-    httpTokens           = "optional"
+    httpEndpoint            = "enabled"
+    httpProtocolIPv6        = "disabled"
+    httpPutResponseHopLimit = 5
+    httpTokens              = "required"
   }
 }
 
@@ -498,4 +498,10 @@ variable "karpenter_ami_selector_terms" {
   default = [
     { alias = "bottlerocket@latest" }
   ]
+}
+
+variable "eks_auto_mode_enabled" {
+  description = "Enable Auto Mode for EKS cluster"
+  type        = bool
+  default     = true
 }

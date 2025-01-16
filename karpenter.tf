@@ -87,13 +87,13 @@ spec:
     httpPutResponseHopLimit: ${var.karpenter_metadata_options.httpPutResponseHopLimit}
     httpTokens: ${var.karpenter_metadata_options.httpTokens}
   blockDeviceMappings:
-  %{ for mapping in var.karpenter_block_device_mappings }
+  %{for mapping in var.karpenter_block_device_mappings}
     - deviceName: ${mapping.deviceName}
       ebs:
         volumeSize: ${mapping.ebs.volumeSize}
         volumeType: ${mapping.ebs.volumeType}
         encrypted: ${mapping.ebs.encrypted}
-  %{ endfor }
+  %{endfor}
   amiFamily: ${var.karpenter_ami_family}
   role: ${aws_iam_role.node.name}
   securityGroupSelectorTerms:
@@ -102,9 +102,9 @@ spec:
   - id: ${aws_subnet.public[0].id}
   - id: ${aws_subnet.public[1].id}
   amiSelectorTerms:
-  %{ for term in var.karpenter_ami_selector_terms }
+  %{for term in var.karpenter_ami_selector_terms}
     - alias: ${term.alias}
-  %{ endfor }
+  %{endfor}
 EOT
 
   depends_on = [

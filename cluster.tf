@@ -38,6 +38,34 @@ resource "aws_eks_cluster" "cluster" {
       }
     }
   }
+  bootstrap_self_managed_addons = var.eks_auto_mode_enabled == true ? false : true
+  # Compute Config (conditional setup for Auto Mode)
+  dynamic "compute_config" {
+    for_each = var.eks_auto_mode_enabled ? [1] : []
+    content {
+      enabled       = true
+      node_pools    = ["general-purpose"]
+      node_role_arn = aws_iam_role.eks_auto[0].arn
+    }
+  }
+  # Kubernetes Network Config (Auto Mode specific)
+  dynamic "kubernetes_network_config" {
+    for_each = var.eks_auto_mode_enabled ? [1] : []
+    content {
+      elastic_load_balancing {
+        enabled = true
+      }
+    }
+  }
+  # Storage Config (Auto Mode specific)
+  dynamic "storage_config" {
+    for_each = var.eks_auto_mode_enabled ? [1] : []
+    content {
+      block_storage {
+        enabled = true
+      }
+    }
+  }
   enabled_cluster_log_types = var.cluster_logging
 
   depends_on = [
@@ -76,20 +104,31 @@ data "tls_certificate" "cluster" {
 resource "aws_iam_role" "cluster" {
   name = "${var.environment_name}-cluster"
 
-  assume_role_policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "eks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-POLICY
+  assume_role_policy = var.eks_auto_mode_enabled == false ? jsonencode({
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "eks.amazonaws.com"
+      }
+    }]
+    Version = "2012-10-17"
+  }) : jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "EKSClusterAssumeRole",
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "eks.amazonaws.com"
+        },
+        "Action" : [
+          "sts:TagSession",
+          "sts:AssumeRole"
+        ]
+      }
+    ]
+  })
 
   tags = local.tags
 }
